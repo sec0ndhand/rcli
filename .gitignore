@@ -1,0 +1,60 @@
+# Compiled object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Compiled dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled executables
+*.exe
+*.out
+*.app
+
+# Directories
+*/build/
+*/dist/
+*/__pycache__/
+*/node_modules/
+*/bower_components/
+*/jspm_packages/
+*/typings/
+*/coverage/
+*/logs/
+*/temp/
+*/tmp/
+*/.sass-cache/
+*/.vscode/
+*/.idea/
+*/.gradle/
+*/.cache/
+*/.DS_Store
+*/Thumbs.db
+
+# Logs and databases
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Other
+*.pyc
+*.class
+*.DS_Store
+*.bak
+*.swp
+*.tmp
+*.tmp.*
+*.~*

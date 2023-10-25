@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+export INSTALL=0
+# HELP=checks if all dependencies are installed
+"$RESOURCE_PATH/$RESOURCE/setup"

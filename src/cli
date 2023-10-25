@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+shopt -s nullglob
+
+export LIBRARY_ROOT="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+export RESOURCE_PATH=${RESOURCE_PATH:="$LIBRARY_ROOT/resources"}
+
+# get app name from file name
+export APP_NAME=$(basename "$0")
+export APP_NAME_DISPLAY="\x1B[38;5;237m$APP_NAME\033[0m"
+
+# export variables from .env file, if .env file exists
+[[ -f "$LIBRARY_ROOT/.env" ]] && source "$LIBRARY_ROOT/.env"
+COPYRIGHT_TEXT=${COPYRIGHT_TEXT:="© 2023"}
+
+
+source "$LIBRARY_ROOT/utils/functions.sh"
+source "$LIBRARY_ROOT/utils/help.sh"
+
+args=("$@")
+
+# Initial array to capture the new args without the global args
+declare -a new_args
+
+# Check and process global args
+for arg in "${args[@]}"; do
+  case "$arg" in
+    "--version")
+      # if you need to handle --version here, do so, otherwise ignore
+      continue
+      ;;
+    "--quiet")
+      export QUIET_OUTPUT=1
+      ;;
+    "--trace")
+      export CLI_TRACE=1
+      ;;
+    *)
+      # Add non-global args to the new_args array
+      new_args+=("$arg")
+      ;;
+  esac
+done
+
+! has_tty && QUIET_OUTPUT=1
+
+execute_cmd() {
+  declare desc="executes $APP_NAME sub-commands"
+  export RESOURCE="$1"
+  local ACTION="$2"
+  local implemented=0
+  local script
+
+  # read all of the arguments that are prefixed with -- into an array
+  # if there is no equal sign, then the value is true
+  # if there is an equal sign, then the value is the string after the equal sign
+  # if there is no value, then the value is the next argument
+  # if there is no next argument, then the value is true
+  # if the argument is not prefixed with --, then it is ignored
+  # the argument is removed from the array, so that the remaining arguments can be passed to the script
+  declare -a options
+  declare -a args
+  declare -a args_to_pass
+  declare -a args_array=("$@")
+
+  i=0
+  while [ $i -lt ${#args_array[@]} ]; do
+      arg="${args_array[$i]}"
+      if [[ "$arg" =~ ^--.* ]]; then
+          key="${arg%%=*}"   # Get the part before the '='
+          key="${key#--}"    # Strip '--' prefix
+          if [[ "$arg" == "--$key" ]]; then
+              next_arg="${args_array[$((i+1))]}"
+              if [[ "$next_arg" && ! "$next_arg" =~ ^--.* ]]; then
+                  # If next argument exists and does not start with '--', then use it as the value
+                  value="$next_arg"
+                  i=$((i+1)) # Increment to skip the next argument as it's already processed
+              else
+                  value="true"
+              fi
+          else
+              value="${arg#*=}"   # Get the part after the '='
+          fi
+          options+=("$key" "$value")
+      else
+          args+=("$arg")
+          args_to_pass+=("$arg")
+      fi
+      i=$((i+1))
+  done
+
+  set -- "${args[@]}"
+
+  # set the options as environment variables
+  for (( i=0; i<${#options[@]}; i+=2 )); do
+    export "${options[$i]}=${options[$i+1]}"
+  done
+
+
+  if [[ -z $ACTION ]] && [[ -x $RESOURCE_PATH/$RESOURCE/default ]]; then
+    "$RESOURCE_PATH/$RESOURCE/default" "$@"
+    implemented=1
+  elif [[ -x $RESOURCE_PATH/$RESOURCE/$ACTION ]] ; then
+    "$RESOURCE_PATH/$RESOURCE/$ACTION" "$@"
+    implemented=1
+  elif [[ "$ACTION" = "help" ]] ; then
+    cli_help_commands "$RESOURCE" "$RESOURCE_PATH"
+    implemented=1
+  fi
+
+  if [[ "$implemented" -eq 0 ]]; then
+    cli_log_warn "\`$*\` is not an $APP_NAME command."
+    cli_log_warn "See \`$APP_NAME help\` for a list of available commands."
+    exit 1
+  fi
+}
+
+case "$1" in
+  help | '')
+    export LC_ALL=C # so sort will respect non alpha characters
+    ALL_RESOURCE_FOLDERS=$(find -L $RESOURCE_PATH -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {})
+
+    # New lines are blank echos for readability
+    cli_log_quiet ""
+    cli_log_quiet "Usage: $APP_NAME RESOURCE COMMAND [--quiet|--trace] [command-specific-options]"
+    cli_log_quiet ""
+    cli_log_quiet "\"$APP_NAME RESOURCE help\" to see command specific help"
+    cli_log_quiet ""
+
+    # echo $ALL_RESOURCE_FOLDERS | tr ' ' '\n' | sort | column -c2 -t -s,
+
+    if [[ "$2" == "--all" ]]; then
+      for res in $ALL_RESOURCE_FOLDERS; do
+        cli_help_commands "$res" "$RESOURCE_PATH"
+      done | column -c2 -t -s,
+    else
+      cli_help_commands "$1" "$RESOURCE_PATH"
+    fi
+    cli_log_quiet ""
+    ;;
+
+  version | -v | --version)
+    cli_version
+    cli_log_quiet ""
+    cli_log_quiet $COPYRIGHT_TEXT
+    cli_log_quiet ""
+    ;;
+
+  *)
+    execute_cmd "${new_args[@]}"
+    ;;
+
+esac
+

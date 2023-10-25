@@ -1,0 +1,16 @@
+NAME
+    RCLI (Our CLI).  A tool to help create simple CLI commands for repetitive tasks.
+SYNOPSIS
+    cli [RESOURCE] [ACTION] [--option1] [--option2] [...]
+DESCRIPTION
+    A tool to help create simple CLI commands for repetitive tasks.
+EXAMPLES
+    cli env setup -- will setup your environment with NVM, Node, and VS Code
+SEE ALSO
+    You can find more information at https://github.com/sec0ndhand/rcli
+BUGS
+    No known bugs at this time.
+AUTHOR
+   Christopher Jensen
+COPYRIGHT
+    © RCLI 2023

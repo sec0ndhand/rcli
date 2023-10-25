@@ -1,0 +1,372 @@
+#!/usr/bin/env bash
+
+# This script can set up or check your environment for the tools necessary for development.
+# It is intended to be run from the root of the repository, and will check for a few well known dev tools.
+# If they are not found, it will attempt to install them.
+
+# You can skip the installation by exporting INSTALL=0 before running the script.
+
+# HELP=setup your local dev environment
+function setup() {
+    # default to installing, use exported INSTALL=0 to skip
+    local INSTALL="${INSTALL:=1}"
+    WE_GOOD=1
+
+    # install if the INSTALL variable is set to 1
+    if [[ $INSTALL -eq 0 ]]
+    then
+        echo "Skipping installation"
+    fi
+
+    # check if brew is installed
+    if ! command -v brew &> /dev/null
+    then
+        echo "brew could not be found"
+        WE_GOOD=0
+
+        if [[ $INSTALL -eq 1 ]]
+        then
+            bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> ~/.zprofile
+	    eval "$(/opt/homebrew/bin/brew shellenv)"
+	fi
+    fi
+
+    if ! command -v docker &> /dev/null
+    then
+        echo "docker could not be found"
+        WE_GOOD=0
+
+        if [[ $INSTALL -eq 1 ]]
+        then
+            brew install docker
+        fi
+    fi
+
+    # check if node is installed
+    if ! command -v nvm &> /dev/null
+    then
+        echo "Node Version Manager could not be found"
+        WE_GOOD=0
+
+        if [[ $INSTALL -eq 1 ]]
+        then
+            brew install nvm
+            mkdir ~/.nvm
+            echo "export NVM_DIR=\"\$HOME/.nvm\" \n\
+                [ -s \"/opt/homebrew/opt/nvm/nvm.sh\" ] && \. \"/opt/homebrew/opt/nvm/nvm.sh\"  # This loads nvm \n\
+                [ -s \"/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm\" ] && \. \"/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm\"  # This loads nvm bash_completion" >> ~/.zshrc
+        fi
+    fi
+
+    # check if visual studio code is installed
+    if ! command -v code &> /dev/null
+    then
+        echo "Visual Studio Code could not be found"
+        WE_GOOD=0
+
+        if [[ $INSTALL -eq 1 ]]
+        then
+            brew install --cask visual-studio-code
+            # Add VS code to the command line, using their instruction that makes code available
+            # from the terminal. See https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line
+            # for more information.
+            echo "export PATH=\"\$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin\"" >> ~/.zshrc
+
+        fi
+    fi
+
+
+    # #########################################################################################################
+    #
+    #                                       Mobile App Development
+    #
+    # #########################################################################################################
+
+    # # check if xcode command line is installed
+    # if ! xcode-select -p 1>/dev/null
+    # then
+    #     echo "Xcode could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 0 ]]
+    #     then
+    #         xcode-select --install
+    #     fi
+    # fi
+
+    # # check if flutter version manager is installed
+    # if ! command -v fvm &> /dev/null
+    # then
+    #     echo "Flutter Version Manager, fvm could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew tap leoafarias/fvm
+    #         brew install fvm
+    #     fi
+    # fi
+
+    # # check if android studio is installed
+    # if ! command -v studio &> /dev/null
+    # then
+    #     echo "Android Studio could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install --cask android-studio
+    #     fi
+    # fi
+
+    # # check if flutter is installed
+    # if ! command -v flutter &> /dev/null
+    # then
+    #     echo "Flutter could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         fvm install 3.10.0
+    #     fi
+    # fi
+
+    # # check if react native is installed
+    # if ! command -v react-native &> /dev/null
+    # then
+    #     echo "React Native could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         npm install -g react-native-cli
+    #     fi
+    # fi
+
+
+
+    # #########################################################################################################
+    #
+    #                                       Misc Tools
+    #
+    # #########################################################################################################
+
+    # # check if ohmyzsh is installed
+    # # check if ~/.oh-my-zsh/oh-my-zsh.sh file is found
+    # if [ ! -f ~/.oh-my-zsh/oh-my-zsh.sh ]; then
+    #     echo "zsh could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]; then
+    #         sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    #     fi
+    # fi
+
+    # # find the line plugins= in .zshrc, replace it with plugins=(git zsh-autosuggestions zsh-syntax-highlighting dotenv rails)
+    # # if it doesn't exist, add it to the end of the file
+    # if ! grep -q "plugins=" ~/.zshrc
+    # then
+    #     echo "plugins=(git zsh-autosuggestions zsh-syntax-highlighting dotenv rails)" >> ~/.zshrc
+    # else
+    #     sed -i '' 's/plugins=.*/plugins=(git zsh-autosuggestions zsh-syntax-highlighting dotenv rails)/g' ~/.zshrc
+    # fi
+
+    # # check if rbenv is installed
+    # if ! command -v rbenv &> /dev/null
+    # then
+    #     echo "rbenv could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install rbenv
+    #         echo 'export PATH="$HOME/.rbenv/bin:$HOME/.rbenv/shims:$PATH"' >> ~/.zshrc
+    #         echo 'if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi' >> ~/.zshrc
+    #     fi
+    # fi
+
+    # # check if yarn is installed
+    # if ! command -v yarn &> /dev/null
+    # then
+    #     echo "yarn could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install yarn
+    #     fi
+    # fi
+
+    # # check if hub is installed
+    # if ! command -v hub &> /dev/null
+    # then
+    #     echo "hub could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install hub
+    #     fi
+    # fi
+
+
+    # # check if Azure CLI is installed
+    # if ! command -v az &> /dev/null
+    # then
+    #     echo "Azure CLI could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install azure-cli
+    #     fi
+    # fi
+
+    # # check if heroku is installed
+    # if ! command -v heroku &> /dev/null
+    # then
+    #     echo "heroku could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew tap heroku/brew && brew install heroku
+    #     fi
+    # fi
+
+    # # check if aws is installed
+    # if ! command -v aws &> /dev/null
+    # then
+    #     echo "aws could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install awscli
+    #     fi
+    # fi
+
+    # # check if shared-mime-info is installed
+    # if ! command -v shared-mime-info &> /dev/null
+    # then
+    #     echo "shared-mime-info could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install shared-mime-info
+    #     fi
+    # fi
+
+    # # check if imagemagick is installed
+    # if ! command -v convert &> /dev/null
+    # then
+    #     echo "imagemagick could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install imagemagick
+    #     fi
+    # fi
+
+
+
+    # #########################################################################################################
+    #
+    #                                       Database Check
+    #
+    # #########################################################################################################
+
+    # if [[ $INSTALL -eq 0 ]]
+    # then
+    #     # check if the docker container is running
+    #     if ! docker ps -q -f name=$DATABASE_SERVICE &> /dev/null
+    #     then
+    #         echo "docker postgres container is not running"
+    #         WE_GOOD=0
+    #     fi
+
+    # if ! command -v psql &> /dev/null
+    # then
+    #     echo "psql could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         # get version 14.5
+    #         brew install postgresql
+    #     fi
+    # fi
+
+    # # check if database is imported
+    # if ! docker exec -i $(docker ps -q -f name=$DATABASE_SERVICE) psql $(echo $DATABASE_URL_LOCAL) -c "SELECT * FROM public.users LIMIT 1;" &> /dev/null
+    #     then
+    #         echo "database is not imported"
+    #         WE_GOOD=0
+    #     fi
+    # fi
+
+
+    # # check if mysql is installed
+    # if ! command -v mysql &> /dev/null
+    # then
+    #     echo "mysql could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install mysql
+    #     fi
+    # fi
+
+    # # check if postgres is installed
+    # if ! command -v postgres &> /dev/null
+    # then
+    #     echo "postgres could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install postgres
+    #     fi
+    # fi
+
+    # # check if Azure Cloud Data Studio is installed
+    # if ! command -v data &> /dev/null
+    # then
+    #     echo "Azure Cloud Data Studio could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install --cask azure-data-studio
+    #     fi
+    # fi
+
+    # # check if tableplus is installed
+    # if ! command -v tableplus &> /dev/null
+    # then
+    #     echo "tableplus could not be found"
+    #     WE_GOOD=0
+
+    #     if [[ $INSTALL -eq 1 ]]
+    #     then
+    #         brew install --cask tableplus
+    #     fi
+    # fi
+
+
+
+    if [ $WE_GOOD -eq 0 ]
+    then
+        echo "Please install the above dependencies and try again"
+        exit 1
+    else
+        echo "No problems were found"
+        exit 0
+    fi
+}
+
+setup
