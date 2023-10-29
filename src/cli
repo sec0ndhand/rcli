@@ -127,6 +127,9 @@ case "$1" in
     cli_log_quiet "Usage: $APP_NAME RESOURCE COMMAND [--quiet|--trace] [command-specific-options]"
     cli_log_quiet ""
     cli_log_quiet "\"$APP_NAME RESOURCE help\" to see command specific help"
+    cli_log_quiet "\"$APP_NAME create-command RESOURCE NAME\" to create a new command"
+    cli_log_quiet "\"$APP_NAME upgrade resources\" pulls your changes from your the Git repository"
+    cli_log_quiet "\"$APP_NAME upgrade rcli\" pulls the updates from the rcli Git repository"
     cli_log_quiet ""
 
     # echo $ALL_RESOURCE_FOLDERS | tr ' ' '\n' | sort | column -c2 -t -s,
@@ -155,6 +158,22 @@ case "$1" in
     cli_log_quiet $COPYRIGHT_TEXT
     cli_log_quiet ""
     ;;
+
+  create-command)
+        create_command "$2" "$3" "$RESOURCE_PATH"
+    ;;
+
+  upgrade)
+      if [[ "$2" == "resources" ]]; then
+        upgrade_git $RESOURCE_PATH
+      elif [[ "$2" == "rcli" ]]; then
+        upgrade_git $LIBRARY_ROOT
+      else
+        upgrade_git $RESOURCE_PATH
+        upgrade_git $LIBRARY_ROOT
+      fi
+    ;;
+
 
   *)
     execute_cmd "${new_args[@]}"

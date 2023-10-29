@@ -210,3 +210,72 @@ suppress_output() {
   return 0
 }
 
+create_command() {
+    RESOURCE_NAME="$1"
+    ACTION_NAME="$2"
+    RESOURCE_ROUTE="$3"
+    RESOURCE_PATH="$RESOURCE_ROUTE/$RESOURCE_NAME"
+    ACTION_FILE="$RESOURCE_PATH/$ACTION_NAME"
+
+    if [[ -z "$RESOURCE_NAME" ]] || [[ -z "$ACTION_NAME" ]]; then
+        echo "Usage: rcli create-command <resource-name> <action-name>"
+        return 1
+    fi
+
+    # Create resource directory if it doesn't exist
+    if [[ ! -d "$RESOURCE_PATH" ]]; then
+        mkdir -p "$RESOURCE_PATH"
+        echo "Created resource directory at $RESOURCE_PATH"
+    fi
+
+    # Create action file
+    if [[ ! -f "$ACTION_FILE" ]]; then
+        cat > "$ACTION_FILE" <<EOL
+#!/usr/bin/env bash
+
+# HELP=Description of what this command does
+
+echo "Hello from $ACTION_NAME!"
+EOL
+        chmod +x "$ACTION_FILE"
+        echo "Created action file at $ACTION_FILE"
+    else
+        echo "Action file already exists at $ACTION_FILE"
+    fi
+
+    # Create default action file if it doesn't exist
+    DEFAULT_ACTION_FILE="$RESOURCE_PATH/default"
+    if [[ ! -f "$DEFAULT_ACTION_FILE" ]]; then
+        cat > "$DEFAULT_ACTION_FILE" <<EOL
+#!/usr/bin/env bash
+
+"\$RESOURCE_PATH/\$RESOURCE/$ACTION_NAME"
+EOL
+        chmod +x "$DEFAULT_ACTION_FILE"
+        echo "Created default action file at $DEFAULT_ACTION_FILE"
+    fi
+}
+
+upgrade_git() {
+    # change to the passed directory
+    GIT_ROOT="$1"
+    cd "$GIT_ROOT" || return 1
+
+    # Fetch the latest changes from the Git repository
+    if ! git fetch; then
+        echo "Failed to fetch updates from the Git repository."
+        return 1
+    fi
+
+    # Get the current branch name
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+    # Pull the latest changes
+    if ! git pull origin "$CURRENT_BRANCH"; then
+        echo "Failed to pull updates from the Git repository."
+        return 1
+    fi
+
+    echo "$GIT_ROOT has been successfully updated."
+    return 0
+}

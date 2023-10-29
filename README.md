@@ -4,23 +4,45 @@
 
 A tool to help create simple CLI commands for repetitive tasks.
 
+# Table of Contents
+1. [Goal](#goal)
+2. [Usage](#usage)
+3. [Example Usage](#example-usage)
+4. [Contributing](#contributing)
+5. [Requirements](#requirements)
+
+
 ## Goal
 
-I created different CLIs over the years using node, python, and bash.  I wanted to create a simple CLI that could be
-re-used for different projects.  This is the result.  Largely based on the work from dokku, which is a great tool for
-deploying apps to a server.  It was incredibly simple under the hood, so I took that simplicity and combined it with the
-way that docker handles commands, and this is the result.
+Create a simple CLI that is based on bash scripts.
 
 ## Usage
-<!-- add a table of contents to link to the sub sections under usage -->
-- [Structure](#structure)
-- [Help Text](#help-text)
-- [Default Handling](#default-handling)
-- [Version](#version)
-- [Changing the cli Name to rbnb or whatever the name of your company is](#changing-the-cli-name-to-rbnb-or-whatever-the-name-of-your-company-is)
-- [Installation](#installation)
-- [Help](#help)
-- [Version](#version-1)
+
+   1. [Installation](#installation)
+   2. [Creating a New Command](#creating-a-new-command)
+   3. [Structure](#structure)
+   4. [Default Handling](#default-handling)
+   5. [Help Text](#help-text)
+   6. [Version](#version)
+
+### Installation
+To create your own cli named `mycli` run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sec0ndhand/rcli/main/install.sh | bash -s -- mycli
+```
+This will create a folder named mycli, and clone the repo into it.  It will also create a symlink in your `/usr/local/bin` so you can run `mycli` command from anywhere.  If you don't provide a name, it will default to `rcli`.
+
+
+### Creating a new Command
+
+This comes with a utility to help you create new commands.  It will create the folder structure and files for you.
+
+```bash
+cli create-command my_resource my_action
+```
+
+Will create a new resource folder in the `resources` folder named `my_resource` and a file named `my_action` where you can add your code.  It will also create a default command that will run if no action is specified.
 
 
 ### Structure
@@ -52,19 +74,6 @@ in the `ACTION` file you can use `$NAME` and it will equal `ian_mackaye` like th
 echo $NAME
 ```
 
-### Help Text
-The help text can be specified at the top of your `ACTION` file with a comment like this:
-
-```bash
-# HELP=This command deletes the entire file system
-```
-
-This will be used when the user wants to know what your command does, and runs
-
-```bash
-cli help --all
-```
-
 ### Default Handling
 
 When a user runs the command:
@@ -79,6 +88,21 @@ here:
 
 `/resources/[RESOURCE]/default`
 
+This is created as part of the `create-command`` utility.
+
+### Help Text
+The help text can be specified at the top of your `ACTION` file with a comment like this:
+
+```bash
+# HELP=This command deletes the entire file system
+```
+
+This will be used when the user wants to know what your command does, and runs
+
+```bash
+cli help --all
+```
+
 ### Version
 
 The `VERSION` file at at the root of the project holds the version that is displayed when running `rcli version`.
@@ -86,36 +110,7 @@ The `VERSION` file at at the root of the project holds the version that is displ
 The version should be bumped every time a change is made, or bundled with like changes while working in a branch like
 `all/version-1-0-0` which would equate to version 1.0.0
 
-### Changing the cli Name to rbnb or whatever the name of your company is
-
-Change the name of the file named rcli to whatever you want and it will work.  The name is not important, it is detected
-from the filename on start.
-
-
-### Installation
-To create your own cli named `mycli` run:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/sec0ndhand/rcli/main/install.sh | bash -s -- mycli
-```
-This will create a folder named mycli, and clone the repo into it.  It will also create a symlink in your `/usr/local/bin` so you can run `mycli` command from anywhere.  If you don't provide a name, it will default to `rcli`.
-
-
-### Help
-To see all the things this can do for you, run
-
-```bash
-rcli help
-```
-
-### Version
-To display the version, run:
-
-```bash
-rcli version
-```
-
-## Example Usage
+### Example Usage
 
 I used this to create a CLI for a company that I worked at had a small team that needed to document how we deployed, and
 used different pieces of infrastructure.  There were a lot of commands and tools that were needed, but I wanted a
@@ -140,7 +135,7 @@ Make sure the tests still pass, or add to the tests to cover your changes.
 
 Submit a PR and HOPE that I am still maintaining this project, or I will probably give you maintainer rights 😬.
 
-### Requirements
+## Requirements
 
 Right now you need to have a mac with git installed.  Most people use the xcode commandline tools, and that is the
 recommended way to install git.
