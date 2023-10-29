@@ -4,7 +4,7 @@ set -eo pipefail
 shopt -s nullglob
 
 export LIBRARY_ROOT="$( cd -- "$( dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")" )" &> /dev/null && pwd )"
-PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+PARENT_PATH=$( cd "$(dirname "${LIBRARY_ROOT}")" ; cd ..; pwd -P )
 export RESOURCE_PATH=${RESOURCE_PATH:="$PARENT_PATH/resources"}
 
 # get app name from file name
@@ -132,6 +132,14 @@ case "$1" in
     # echo $ALL_RESOURCE_FOLDERS | tr ' ' '\n' | sort | column -c2 -t -s,
 
     if [[ "$2" == "--all" ]]; then
+      for res in $ALL_RESOURCE_FOLDERS; do
+        cli_help_commands "$res" "$RESOURCE_PATH"
+      done | column -c2 -t -s,
+    elif [[ "$1" == "help" ]]; then
+      for res in $ALL_RESOURCE_FOLDERS; do
+        cli_help_commands "$res" "$RESOURCE_PATH"
+      done | column -c2 -t -s,
+    elif [[ "$1" == "" ]]; then
       for res in $ALL_RESOURCE_FOLDERS; do
         cli_help_commands "$res" "$RESOURCE_PATH"
       done | column -c2 -t -s,
