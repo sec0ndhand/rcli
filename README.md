@@ -93,28 +93,13 @@ from the filename on start.
 
 
 ### Installation
-To install, clone the project:
+To create your own cli named `mycli` run:
 
 ```bash
-git clone https://github.com/sec0nd_hand/rcli
+curl -fsSL https://raw.githubusercontent.com/sec0ndhand/rcli/main/install.sh | bash -s -- mycli
 ```
+This will create a folder named mycli, and clone the repo into it.  It will also create a symlink in your `/usr/local/bin` so you can run `mycli` command from anywhere.  If you don't provide a name, it will default to `rcli`.
 
-Navigate to rcli project
-```bash
-cd rcli
-```
-
-and run the install command
-
-```bash
-./rcli install
-```
-
-and source your .zshrc
-
-```bash
-source ~/.zshrc
-```
 
 ### Help
 To see all the things this can do for you, run

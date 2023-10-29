@@ -3,8 +3,9 @@
 set -eo pipefail
 shopt -s nullglob
 
-export LIBRARY_ROOT="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-export RESOURCE_PATH=${RESOURCE_PATH:="$LIBRARY_ROOT/resources"}
+export LIBRARY_ROOT="$( cd -- "$( dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")" )" &> /dev/null && pwd )"
+PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+export RESOURCE_PATH=${RESOURCE_PATH:="$PARENT_PATH/resources"}
 
 # get app name from file name
 export APP_NAME=$(basename "$0")
